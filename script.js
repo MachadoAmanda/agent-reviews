@@ -9,24 +9,28 @@ function buscarInformacoesProduto() {
     }
     
     spinner.style.display = "block";
-    resultadoDiv.textContent = "Buscando...";
+    resultadoDiv.textContent = "";
 
     const urlOriginal = `https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`;
-    const urlComProxy = `https://corsproxy.io/?${encodeURIComponent(urlOriginal)}`;
+    const urlComProxy = `https://proxy.cors.sh/${urlOriginal}`;
 
-    fetch(urlComProxy)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Erro na requisição: " + response.status);
-            }
-            return response.text(); // Aqui tratamos como texto mesmo!
-        })
-        .then(data => {
-            spinner.style.display = "none";
-            resultadoDiv.textContent = data;
-        })
-        .catch(error => {
-            spinner.style.display = "none";
-            resultadoDiv.textContent = "Erro: " + error.message;
-        });
+    fetch(urlComProxy, {
+        headers: {
+            'x-cors-api-key': 'temp_key'  // Pode usar 'temp_key' gratuito
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Erro na requisição: " + response.status);
+        }
+        return response.text();
+    })
+    .then(data => {
+        spinner.style.display = "none";
+        resultadoDiv.textContent = data;
+    })
+    .catch(error => {
+        spinner.style.display = "none";
+        resultadoDiv.textContent = "Erro: " + error.message;
+    });
 }
