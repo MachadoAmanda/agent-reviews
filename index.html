@@ -54,6 +54,11 @@
             margin-top: 20px;
             font-size: 16px;
         }
+        #status {
+            margin-top: 10px;
+            font-size: 14px;
+            color: gray;
+        }
     </style>
 </head>
 <body>
@@ -63,6 +68,7 @@
         <button onclick="buscarInformacoesProduto()">Buscar</button>
         <div id="spinner" class="spinner"></div>
         <div id="resultado"></div>
+        <div id="status"></div> <!-- Status da requisição será exibido aqui -->
     </div>
 
     <script>
@@ -70,18 +76,24 @@
             const produto = document.getElementById('produto').value; // Captura o valor inserido
             const resultadoDiv = document.getElementById('resultado'); // Onde o resultado será exibido
             const spinner = document.getElementById('spinner'); // Spinner de carregamento
-            
+            const statusDiv = document.getElementById('status'); // Onde o status será exibido
+
             if (!produto) {
                 resultadoDiv.textContent = "Você precisa digitar um produto para realizar a pesquisa";
+                statusDiv.textContent = ""; // Limpa o status
                 return;
             }
             
             // Exibe o spinner enquanto faz a requisição
             spinner.style.display = "block";
-            
+            statusDiv.textContent = "Buscando..."; // Exibe status de "buscando"
+
             // Faz a requisição à API
             fetch(`https://cors-anywhere.herokuapp.com/https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`)
-                .then(response => response.text()) // Pega a resposta como texto simples
+                .then(response => {
+                    statusDiv.textContent = `Status da requisição: ${response.status} ${response.statusText}`; // Exibe o status da requisição
+                    return response.text(); // Pega a resposta como texto simples
+                })
                 .then(data => {
                     // Oculta o spinner
                     spinner.style.display = "none";
@@ -92,6 +104,7 @@
                     // Oculta o spinner
                     spinner.style.display = "none";
                     resultadoDiv.textContent = "Ocorreu um erro ao buscar as informações. Tente novamente mais tarde.";
+                    statusDiv.textContent = `Erro: ${error.message}`; // Exibe o erro no status
                 });
         }
     </script>
