@@ -84,13 +84,14 @@
             fetch(`https://api.allorigins.win/get?url=${encodeURIComponent("https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=" + produto)}`)
                 .then(response => response.json()) // A resposta será no formato JSON
                 .then(data => {
-                    if (!data.contents) {
-                        throw new Error("Não foi possível recuperar os dados.");
+                    if (data.contents) {
+                        // Oculta o spinner
+                        spinner.style.display = "none";
+                        // Exibe a resposta diretamente como texto
+                        resultadoDiv.textContent = data.contents; // Exibe o conteúdo da resposta
+                    } else {
+                        throw new Error("Erro ao obter dados.");
                     }
-                    // Oculta o spinner
-                    spinner.style.display = "none";
-                    // Exibe a resposta diretamente como texto
-                    resultadoDiv.textContent = data.contents; // Exibe o conteúdo da resposta
                 })
                 .catch(error => {
                     // Oculta o spinner
