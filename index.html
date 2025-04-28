@@ -80,7 +80,7 @@
             spinner.style.display = "block";
             
             // Faz a requisição à API
-            fetch(`https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`)
+            fetch(`https://cors-anywhere.herokuapp.com/https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`)
                 .then(response => response.text()) // Pega a resposta como texto simples
                 .then(data => {
                     // Oculta o spinner
