@@ -3,19 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buscar Produto</title>
+
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
-  <div class="container">
-    <h2>Pesquise um produto</h2>
-    <input type="text" id="produto" placeholder="Digite o nome do produto">
-    <button onclick="buscarInformacoesProduto()">Buscar</button>
-    <div id="spinner" class="spinner"></div>
-    <div id="resultado"></div>
-  </div>
 
-  <script src="script.js"></script>
+    <h1>Buscar Produto</h1>
+    <input type="text" id="produto" placeholder="Digite o nome do produto" />
+    <button onclick="buscarInformacoesProduto()">Buscar</button>
+    <div id="spinner">Carregando...</div>
+    <div id="resultado"></div>
+    <script src="seu-script.js"></script> <!-- ou o JS que mandei antes direto aqui -->
 </body>
 </html>
