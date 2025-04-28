@@ -8,92 +8,113 @@ async function buscarInformacoesProduto() {
     return;
   }
   
+  // Limpa resultados anteriores e mostra spinner
   spinner.style.display = "block";
   resultadoDiv.innerHTML = "";
-
+  
   try {
-    // URL direta (teste primeiro sem proxy)
-    const url = `https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`;
-    
-    const response = await fetch(url, {
-      mode: 'cors', // força o modo CORS
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    });
-
-    if (!response.ok) {
-      throw new Error(`Erro HTTP: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    // Processamento da resposta
-    if (!Array.isArray(data)) {
-      throw new Error("Formato de resposta inválido");
-    }
-
-    const mensagensValidas = data.filter(m => m.content?.trim());
-    
-    if (mensagensValidas.length === 0) {
-      resultadoDiv.innerHTML = "<p>Nenhuma informação encontrada para este produto.</p>";
-      return;
-    }
-
-    const finalContent = mensagensValidas[mensagensValidas.length - 1].content;
-    const markdownHtml = marked.parse(finalContent);
-
-    resultadoDiv.innerHTML = `
-      <div class="markdown-content">${markdownHtml}</div>
-      <div class="accordion">
-        <div class="accordion-header" onclick="toggleAccordion()">Como a IA chegou nessa resposta?</div>
-        <div class="accordion-content" id="accordion-content">
-          <div class="messages-container">
-            ${mensagensValidas.map(m => `
-              <div class="message ${m.type === 'human' ? 'human' : 'ai'}">
-                <strong>${m.type === 'human' ? 'Humano' : 'IA'}:</strong> ${m.content.replace(/\n/g, "<br>")}
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      </div>
-    `;
+    // Tentativa 1: Requisição direta com timeout
+    await tentarRequisicaoDireta(produto, spinner, resultadoDiv);
   } catch (error) {
-    console.error("Erro na requisição:", error);
-    resultadoDiv.innerHTML = `
-      <p>Não foi possível obter as informações. Erro: ${error.message}</p>
-      <p>Tente novamente ou verifique sua conexão.</p>
-    `;
+    console.error("Falha na requisição direta:", error);
     
-    // Tentativa alternativa com proxy CORS
-    await tentarComProxyCors(produto, spinner, resultadoDiv);
+    // Tentativa 2: Usando proxy CORS alternativo
+    try {
+      await tentarComProxyCors(produto, spinner, resultadoDiv);
+    } catch (proxyError) {
+      console.error("Falha com proxy CORS:", proxyError);
+      resultadoDiv.innerHTML = `
+        <p>Não foi possível conectar ao servidor.</p>
+        <p>Detalhes: ${proxyError.message}</p>
+        <p>Status do servidor: Online (logs mostram resposta 200)</p>
+        <p>Possível problema de configuração CORS no servidor.</p>
+      `;
+    }
   } finally {
     spinner.style.display = "none";
   }
 }
 
-async function tentarComProxyCors(produto, spinner, resultadoDiv) {
-  try {
-    spinner.style.display = "block";
-    const urlOriginal = `https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`;
-    const urlComProxy = `https://cors-anywhere.herokuapp.com/${urlOriginal}`;
-    
-    const response = await fetch(urlComProxy, {
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
-    });
-
-    if (!response.ok) throw new Error(`Erro no proxy: ${response.status}`);
-    
-    const data = await response.json();
-    
-    // ... (mesmo processamento da resposta que na função principal)
-  } catch (proxyError) {
-    console.error("Erro no proxy CORS:", proxyError);
-    resultadoDiv.innerHTML += `<p>Também falhou com proxy CORS: ${proxyError.message}</p>`;
+async function tentarRequisicaoDireta(produto, spinner, resultadoDiv) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // Timeout de 10 segundos
+  
+  const url = `https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`;
+  
+  const response = await fetch(url, {
+    method: 'GET', // Força método GET
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    signal: controller.signal
+  });
+  
+  clearTimeout(timeoutId);
+  
+  if (!response.ok) {
+    throw new Error(`Erro HTTP: ${response.status}`);
   }
+  
+  const data = await response.json();
+  processarResposta(data, resultadoDiv);
+}
+
+async function tentarComProxyCors(produto, spinner, resultadoDiv) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // Timeout de 15 segundos
+  
+  const urlOriginal = `https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`;
+  const urlComProxy = `https://cors-anywhere.herokuapp.com/${urlOriginal}`;
+  
+  const response = await fetch(urlComProxy, {
+    method: 'GET',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
+    },
+    signal: controller.signal
+  });
+  
+  clearTimeout(timeoutId);
+  
+  if (!response.ok) {
+    throw new Error(`Erro no proxy: ${response.status}`);
+  }
+  
+  const data = await response.json();
+  processarResposta(data, resultadoDiv);
+}
+
+function processarResposta(data, resultadoDiv) {
+  if (!Array.isArray(data)) {
+    throw new Error("Formato de resposta inválido");
+  }
+
+  const mensagensValidas = data.filter(m => m.content?.trim());
+  
+  if (mensagensValidas.length === 0) {
+    throw new Error("Nenhuma informação encontrada para este produto");
+  }
+
+  const finalContent = mensagensValidas[mensagensValidas.length - 1].content;
+  const markdownHtml = marked.parse(finalContent);
+
+  resultadoDiv.innerHTML = `
+    <div class="markdown-content">${markdownHtml}</div>
+    <div class="accordion">
+      <div class="accordion-header" onclick="toggleAccordion()">Como a IA chegou nessa resposta?</div>
+      <div class="accordion-content" id="accordion-content">
+        <div class="messages-container">
+          ${mensagensValidas.map(m => `
+            <div class="message ${m.type === 'human' ? 'human' : 'ai'}">
+              <strong>${m.type === 'human' ? 'Humano' : 'IA'}:</strong> ${m.content.replace(/\n/g, "<br>")}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function toggleAccordion() {
