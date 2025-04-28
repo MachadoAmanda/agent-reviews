@@ -1,34 +1,28 @@
-document.getElementById('productForm').addEventListener('submit', function(event) {
-    event.preventDefault();
-
-    // Obter o nome do produto inserido
-    const produto = document.getElementById('produto').value.trim();
-
-    // Verificar se o produto foi inserido
+function buscarInformacoesProduto() {
+    const produto = document.getElementById('produto').value; // Captura o valor inserido
+    const resultadoDiv = document.getElementById('resultado'); // Onde o resultado será exibido
+    const spinner = document.getElementById('spinner'); // Spinner de carregamento
+    
     if (!produto) {
-        document.getElementById('error').style.display = 'block'; // Exibe a mensagem de erro
-        document.getElementById('result').style.display = 'none'; // Esconde o resultado anterior
+        resultadoDiv.textContent = "Você precisa digitar um produto para realizar a pesquisa";
         return;
     }
-
-    // Esconde qualquer mensagem de erro e mostra o spinner
-    document.getElementById('error').style.display = 'none';
-    document.getElementById('spinner').style.display = 'block';
-    document.getElementById('result').style.display = 'none'; // Esconde o resultado anterior
-
-    // Fazer a requisição para a API
-    fetch(`https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`)
-        .then(response => response.json())
+    
+    // Exibe o spinner enquanto faz a requisição
+    spinner.style.display = "block";
+    
+    // Usando ThingProxy para contornar o CORS
+    fetch(`https://thingproxy.freeboard.io/fetch/https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`)
+        .then(response => response.text()) // Pega a resposta como texto simples
         .then(data => {
-            // Esconde o spinner e mostra o resultado
-            document.getElementById('spinner').style.display = 'none';
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('output').textContent = JSON.stringify(data, null, 2);
+            // Oculta o spinner
+            spinner.style.display = "none";
+            // Exibe a resposta diretamente como texto
+            resultadoDiv.textContent = data;
         })
         .catch(error => {
-            // Esconde o spinner em caso de erro e exibe uma mensagem genérica
-            document.getElementById('spinner').style.display = 'none';
-            document.getElementById('result').style.display = 'block';
-            document.getElementById('output').textContent = 'Ocorreu um erro ao buscar as informações. Tente novamente mais tarde.';
+            // Oculta o spinner
+            spinner.style.display = "none";
+            resultadoDiv.textContent = "Ocorreu um erro ao buscar as informações. Tente novamente mais tarde.";
         });
-});
+}
