@@ -79,13 +79,13 @@
             // Exibe o spinner enquanto faz a requisição
             spinner.style.display = "block";
             
-            // Faz a requisição à API via CORS Proxy
-            fetch(`https://cors-anywhere.herokuapp.com/https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`)
-                .then(response => response.text()) // Pega a resposta como texto
+            // Usando ThingProxy para contornar o CORS
+            fetch(`https://thingproxy.freeboard.io/fetch/https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`)
+                .then(response => response.text()) // Pega a resposta como texto simples
                 .then(data => {
                     // Oculta o spinner
                     spinner.style.display = "none";
-                    // Exibe a resposta diretamente
+                    // Exibe a resposta diretamente como texto
                     resultadoDiv.textContent = data;
                 })
                 .catch(error => {
