@@ -1,7 +1,7 @@
-function buscarInformacoesProduto() {
+async function buscarInformacoesProduto() {
   const produto = document.getElementById('produto').value;
   const resultadoDiv = document.getElementById('resultado');
-  const spinner = document.getElementById('spinner'); // Corrigi o ID para 'spinner' (tinha um typo)
+  const spinner = document.getElementById('spinner');
   
   if (!produto) {
     resultadoDiv.innerHTML = "<p>Você precisa digitar um produto para realizar a pesquisa.</p>";
@@ -11,43 +11,33 @@ function buscarInformacoesProduto() {
   spinner.style.display = "block";
   resultadoDiv.innerHTML = "";
 
-  const urlOriginal = `https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`;
-  const urlComProxy = `https://proxy.cors.sh/${urlOriginal}`;
-
-  fetch(urlComProxy, {
-    headers: {
-      'x-cors-api-key': 'temp_key',
-      'Origin': window.location.origin
-    }
-  })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    return response.text(); // Primeiro pegamos o texto da resposta
-  })
-  .then(text => {
-    spinner.style.display = "none";
+  try {
+    // URL direta (teste primeiro sem proxy)
+    const url = `https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`;
     
-    let data;
-    try {
-      data = JSON.parse(text); // Tentamos parsear o texto como JSON
-    } catch (e) {
-      console.error("Erro ao parsear JSON:", e);
-      resultadoDiv.innerHTML = "<p>Erro ao interpretar resposta da IA.</p>";
-      return;
+    const response = await fetch(url, {
+      mode: 'cors', // força o modo CORS
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Erro HTTP: ${response.status}`);
     }
 
+    const data = await response.json();
+
+    // Processamento da resposta
     if (!Array.isArray(data)) {
-      resultadoDiv.innerHTML = "<p>Formato inesperado na resposta.</p>";
-      return;
+      throw new Error("Formato de resposta inválido");
     }
 
-    // Filtrar apenas mensagens que têm `content` não vazio
-    const mensagensValidas = data.filter(m => m.content && m.content.trim() !== "");
-
+    const mensagensValidas = data.filter(m => m.content?.trim());
+    
     if (mensagensValidas.length === 0) {
-      resultadoDiv.innerHTML = "<p>Nenhuma resposta válida encontrada.</p>";
+      resultadoDiv.innerHTML = "<p>Nenhuma informação encontrada para este produto.</p>";
       return;
     }
 
@@ -69,12 +59,41 @@ function buscarInformacoesProduto() {
         </div>
       </div>
     `;
-  })
-  .catch(error => {
-    spinner.style.display = "none";
+  } catch (error) {
     console.error("Erro na requisição:", error);
-    resultadoDiv.innerHTML = `<p>Erro ao buscar informações: ${error.message}</p>`;
-  });
+    resultadoDiv.innerHTML = `
+      <p>Não foi possível obter as informações. Erro: ${error.message}</p>
+      <p>Tente novamente ou verifique sua conexão.</p>
+    `;
+    
+    // Tentativa alternativa com proxy CORS
+    await tentarComProxyCors(produto, spinner, resultadoDiv);
+  } finally {
+    spinner.style.display = "none";
+  }
+}
+
+async function tentarComProxyCors(produto, spinner, resultadoDiv) {
+  try {
+    spinner.style.display = "block";
+    const urlOriginal = `https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`;
+    const urlComProxy = `https://cors-anywhere.herokuapp.com/${urlOriginal}`;
+    
+    const response = await fetch(urlComProxy, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    });
+
+    if (!response.ok) throw new Error(`Erro no proxy: ${response.status}`);
+    
+    const data = await response.json();
+    
+    // ... (mesmo processamento da resposta que na função principal)
+  } catch (proxyError) {
+    console.error("Erro no proxy CORS:", proxyError);
+    resultadoDiv.innerHTML += `<p>Também falhou com proxy CORS: ${proxyError.message}</p>`;
+  }
 }
 
 function toggleAccordion() {
