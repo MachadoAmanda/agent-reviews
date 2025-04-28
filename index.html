@@ -78,20 +78,26 @@
             
             // Exibe o spinner enquanto faz a requisição
             spinner.style.display = "block";
+            resultadoDiv.textContent = "Buscando..."; // Exibe o status "Buscando..."
             
             // Usando ThingProxy para contornar o CORS
             fetch(`https://thingproxy.freeboard.io/fetch/https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`)
-                .then(response => response.text()) // Pega a resposta como texto simples
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Erro na requisição"); // Se o status não for ok, lança um erro
+                    }
+                    return response.text();
+                })
                 .then(data => {
                     // Oculta o spinner
                     spinner.style.display = "none";
                     // Exibe a resposta diretamente como texto
-                    resultadoDiv.textContent = data;
+                    resultadoDiv.textContent = `Resultado: ${data}`; // Exibe os dados recebidos
                 })
                 .catch(error => {
                     // Oculta o spinner
                     spinner.style.display = "none";
-                    resultadoDiv.textContent = "Nada.";
+                    resultadoDiv.textContent = `Erro: ${error.message}`; // Exibe o erro, se houver
                 });
         }
     </script>
