@@ -1,19 +1,38 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <meta charset="UTF-8">
+    <title>Busca de Produto</title>
+    <style>
+        #spinner {
+            display: none;
+        }
+        .mensagem {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+        .card-snippet {
+            border: 1px solid #ddd;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #fafafa;
+        }
+    </style>
 </head>
 <body>
 
     <h1>Buscar Produto</h1>
+
     <input type="text" id="produto" placeholder="Digite o nome do produto" />
     <button onclick="buscarInformacoesProduto()">Buscar</button>
+
     <div id="spinner">Carregando...</div>
+
     <div id="resultado"></div>
+
     <script src="seu-script.js"></script> <!-- ou o JS que mandei antes direto aqui -->
 </body>
 </html>
