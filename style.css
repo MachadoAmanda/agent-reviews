@@ -85,4 +85,24 @@ button:hover {
   border-radius: 5px;
 }
 
-.message
+.message {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 8px;
+  max-width: 90%;
+}
+
+.human {
+  background-color: #d1ecf1;
+  align-self: flex-start;
+}
+
+.ai {
+  background-color: #d4edda;
+  align-self: flex-end;
+}
+
+.messages-container {
+  display: flex;
+  flex-direction: column;
+}
