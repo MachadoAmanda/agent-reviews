@@ -80,24 +80,22 @@
             spinner.style.display = "block";
             resultadoDiv.textContent = "Buscando..."; // Exibe o status "Buscando..."
             
-            // Usando ThingProxy para contornar o CORS
-            fetch(`https://thingproxy.freeboard.io/fetch/https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error("Erro na requisição"); // Se o status não for ok, lança um erro
-                    }
-                    return response.text();
-                })
+            // Usando All Origins para contornar o CORS
+            fetch(`https://api.allorigins.win/get?url=${encodeURIComponent("https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=" + produto)}`)
+                .then(response => response.json()) // A resposta será no formato JSON
                 .then(data => {
+                    if (!data.contents) {
+                        throw new Error("Não foi possível recuperar os dados.");
+                    }
                     // Oculta o spinner
                     spinner.style.display = "none";
                     // Exibe a resposta diretamente como texto
-                    resultadoDiv.textContent = `Resultado: ${data}`; // Exibe os dados recebidos
+                    resultadoDiv.textContent = data.contents; // Exibe o conteúdo da resposta
                 })
                 .catch(error => {
                     // Oculta o spinner
                     spinner.style.display = "none";
-                    resultadoDiv.textContent = `Erro: ${error.message}`; // Exibe o erro, se houver
+                    resultadoDiv.textContent = "Erro: " + error.message; // Exibe o erro caso ocorra
                 });
         }
     </script>
