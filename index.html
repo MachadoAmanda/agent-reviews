@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informações do Produto</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Buscar Informações sobre Produto</h1>
+        
+        <form id="productForm">
+            <label for="produto">Digite o nome do Produto:</label>
+            <input type="text" id="produto" name="produto" placeholder="Exemplo: Playstation 5" required>
+            <button type="submit">Buscar</button>
+        </form>
+
+        <!-- Área onde o spinner será exibido enquanto aguarda a resposta -->
+        <div id="spinner" class="spinner" style="display: none;"></div>
+
+        <!-- Resultado da API -->
+        <div id="result">
+            <h2>Resultado:</h2>
+            <pre id="output"></pre>
+        </div>
+
+        <!-- Mensagem de erro caso o produto não seja informado -->
+        <div id="error" style="color: red; display: none;">
+            <p>Você precisa digitar um produto para realizar a pesquisa.</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
