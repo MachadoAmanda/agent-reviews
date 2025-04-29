@@ -26,7 +26,6 @@ async function buscarInformacoesProduto() {
       resultadoDiv.innerHTML = `
         <p>Não foi possível conectar ao servidor.</p>
         <p>Detalhes: ${proxyError.message}</p>
-        <p>Status do servidor: Online (logs mostram resposta 200)</p>
         <p>Possível problema de configuração CORS no servidor.</p>
       `;
     }
@@ -37,7 +36,7 @@ async function buscarInformacoesProduto() {
 
 async function tentarRequisicaoDireta(produto, spinner, resultadoDiv) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000); // Timeout de 10 segundos
+  const timeoutId = setTimeout(() => controller.abort(), 100000); 
   
   const url = `https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`;
   
@@ -62,7 +61,7 @@ async function tentarRequisicaoDireta(produto, spinner, resultadoDiv) {
 
 async function tentarComProxyCors(produto, spinner, resultadoDiv) {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 15000); // Timeout de 15 segundos
+  const timeoutId = setTimeout(() => controller.abort(), 100000); // Timeout de 100 segundos
   
   const urlOriginal = `https://agent-reviews-1a7024548a3d.herokuapp.com/aplication?produto=${encodeURIComponent(produto)}`;
   const urlComProxy = `https://cors-anywhere.herokuapp.com/${urlOriginal}`;
